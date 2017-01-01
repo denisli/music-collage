@@ -24,6 +24,11 @@ class Signal(object):
     #print np.divide(np.multiply(self.data, amplitude), currentAmplitude).dtype
     if currentAmplitude == 0: return Signal(self.samplingRate, self.data)
     else: return Signal(self.samplingRate, (self.data * float(amplitude) / currentAmplitude).astype(np.int16))
+  def normalize(self):
+    '''
+    Returns a signal with normalized data
+    '''
+    
   def truncate(self, startIndex, endIndex):
     '''
     Returns a signal which matches with this signal being truncated at start index and end index

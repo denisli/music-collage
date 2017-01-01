@@ -2,6 +2,7 @@ import stft
 import numpy as np
 import msignal
 import scipy.io.wavfile
+import scipy.signal
 import matplotlib.pyplot as plt
 import spectral_difference
 
@@ -17,18 +18,15 @@ def findPeaks(data, thresholdFunction, radius):
 
 # Implemented using the median adaptive filter threshold shown here:
 # https://pdfs.semanticscholar.org/4afa/5e20cbbc5300c51dd9e16e20674d257a3f39.pdf
-def thresholdFunction(detectionFunction, delta, lamb, M):
-  def adaptiveThreshold(n):
-    left, right = max(0, n-M), min(len(detectionFunction), n+M+1)
-    return delta + lamb * np.median(np.abs(detectionFunction[left:right]))
-  return np.array( [ adaptiveThreshold(n) for n in xrange(len(detectionFunction)) ] )
+def medianFilter(signal, kernelSize, delta, lamb):
+  return np.add(delta, np.multiply(lamb, scipy.signal.medfilt(signal, kernelSize)))
   
 if __name__ == '__main__':
   samplingRate, data = scipy.io.wavfile.read('dataset/twinkle twinkle little star.wav')
   data = np.add(data[:,0], data[:,1])
   signal = msignal.Signal(samplingRate, data)
   sd = spectral_difference.spectralDifference(signal, 40, 5)
-  thresholds = thresholdFunction(sd, 0, 1, 1000)
+  thresholds = medianFilter(sd, 999, 0, 1)
   plt.figure(1)
   plt.subplot(311)
   plt.plot(thresholds)

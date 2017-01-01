@@ -1,4 +1,5 @@
 import stft
+import peak_finding
 
 def onsetDetection(signal):
   '''
