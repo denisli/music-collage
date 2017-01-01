@@ -28,7 +28,9 @@ class Signal(object):
     '''
     Returns a signal with normalized data
     '''
-    
+    currentAmplitude = self.getAmplitude()
+    if currentAmplitude == 0: raise RuntimeError('The signal has 0 amplitude. Cannot normalized')
+    return Signal(self.samplingRate, self.data / currentAmplitude)
   def truncate(self, startIndex, endIndex):
     '''
     Returns a signal which matches with this signal being truncated at start index and end index
