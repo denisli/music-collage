@@ -11,7 +11,7 @@ import pitch_detection
 def monophonicWavToMidi(wav_filename, midi_filename):
   # extract wavfile information
   [ samplingRate, data ] = scipy.io.wavfile.read(wav_filename)
-  data = np.average(data, 1) # average to handle cases with more than one channel
+  data = np.sum(data, 1) # average to handle cases with more than one channel
   onsets, durations, pitches = getSignalInformation(msignal.Signal(samplingRate, data))
 
   # construct a midi file from the above info

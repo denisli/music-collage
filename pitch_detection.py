@@ -36,7 +36,7 @@ def getGeneralPitch(signal):
 if __name__ == '__main__':
   samplingRate, data = scipy.io.wavfile.read('dataset/twinkle twinkle little star.wav')
   print 'here0'
-  data = np.add(data[:,0], data[:,1])
+  data = np.sum(data, 1)
   signal = msignal.Signal(samplingRate, data)
   print 'here0.5'
   hopSize = 10
@@ -52,4 +52,5 @@ if __name__ == '__main__':
   print 'here5'
   offsets = np.add(onsets, durations)
   print 'here6'
-  print getGeneralPitch(signal.truncate(onsets[1], offsets[1]+1))
+  for i in xrange(len(onsets)):
+    print i, getGeneralPitch(signal.truncate(onsets[i], offsets[i]+1))
