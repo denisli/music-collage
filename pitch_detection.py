@@ -31,7 +31,6 @@ def getGeneralPitch(signal):
     nac = ac / np.sqrt(sumSqBeg * sumSqEnd)
     if nac > bestNac:
       bestNac, bestP = nac, p
-  print bestP
   return float(signal.samplingRate) / bestP
 
 if __name__ == '__main__':
@@ -49,8 +48,8 @@ if __name__ == '__main__':
   print 'here3'
   onsets = np.multiply(peakLocs, hopSize)
   print 'here4'
-  durations = note_duration_detection.noteDurationDetection(signal, onsets)
+  durations = note_duration_detection.getNoteDurations(signal, onsets)
   print 'here5'
   offsets = np.add(onsets, durations)
   print 'here6'
-  getGeneralPitch(signal.truncate(onsets[9], offsets[9]+1))
+  print getGeneralPitch(signal.truncate(onsets[1], offsets[1]+1))

@@ -9,7 +9,7 @@ import peak_finding
 
 SILENCE_THRESHOLD = 10
 
-def noteDurationDetection(signal, onsets):
+def getNoteDurations(signal, onsets):
   durations = []
   if len(onsets) == 0: return durations
   absData = np.abs(signal.data)
@@ -56,7 +56,7 @@ if __name__ == '__main__':
   print 'here3'
   actualPeakLocs = np.multiply(peakLocs, hopSize)
   print 'here4'
-  durations = noteDurationDetection(signal, actualPeakLocs)
+  durations = getNoteDurations(signal, actualPeakLocs)
   print 'here5'
   offsets = np.add(actualPeakLocs, durations)
   print 'here6'
