@@ -1,5 +1,5 @@
 import time
-import stft
+import mstft
 import numpy as np
 import msignal
 import scipy.io.wavfile
@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 # http://bingweb.binghamton.edu/~ahess2/Onset_Detection_Nov302011.pdf
 # Modified by me
 def spectralDifference(signal, windowSize, hopSize):
-  stftData = stft.stft(signal, windowSize, hopSize)
+  stftData = mstft.mstft(signal, windowSize, hopSize)
   absData = np.abs(stftData)
   diff = np.diff(absData, axis=0)
   sd = np.sum(np.square(np.divide(np.add(diff, np.abs(diff)), 2)), 1)
