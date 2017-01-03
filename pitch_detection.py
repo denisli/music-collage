@@ -20,18 +20,43 @@ def getGeneralPitch(signal):
   n = len(data)
   minF, maxF = 27.5, 4186.0
   minP, maxP = int(signal.samplingRate / maxF - 1), int(signal.samplingRate / minF + 1)
-  bestP = minP
-  bestNac = float('-inf')
+  
+  # figure out the normalized autocorrelation
+  nac = np.zeros(maxP + 2).astype(float)
   for p in xrange(minP-1, maxP+2):
     unshifted = data[:n-p].astype(float)
     shifted = data[p:n].astype(float)
     ac = np.dot(unshifted, shifted)
     sumSqBeg = np.dot(unshifted, unshifted)
     sumSqEnd = np.dot(shifted, shifted)
-    nac = ac / np.sqrt(sumSqBeg * sumSqEnd)
-    if nac > bestNac:
-      bestNac, bestP = nac, p
-  return float(signal.samplingRate) / bestP
+    nac[p] = ac / np.sqrt(sumSqBeg * sumSqEnd)
+
+  # find the highest value
+  bestP = minP
+  for p in xrange(minP, maxP+1):
+    if nac[p] > nac[bestP]: bestP = p
+
+  # interpolate to find the estimated period
+  mid, left, right = nac[bestP], nac[bestP-1], nac[bestP+1]
+  shift = 0.5 * (right - left) / (2 * mid - left - right)
+  pEst = bestP + shift
+
+  # find out if there is a sub-multiple period that works
+  subMulThreshold = 0.9
+  maxMul = bestP / minP
+  found = False
+  mul = maxMul
+  while not found and mul >= 1:
+    subsAllStrong = True
+    pTest = pEst / mul
+    for k in xrange(1, mul):
+      pTestMul = int(k * pTest + 0.5)
+      if nac[pTestMul] < subMulThreshold * nac[bestP]: subsAllStrong = False
+    if subsAllStrong:
+      found = True
+      pEst = pTest
+    mul -= 1
+  return float(signal.samplingRate / pEst)
 
 if __name__ == '__main__':
   samplingRate, data = scipy.io.wavfile.read('dataset/twinkle twinkle little star.wav')

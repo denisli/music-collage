@@ -22,14 +22,21 @@ def medianFilter(signal, kernelSize, delta, lamb):
   return np.add(delta, np.multiply(lamb, scipy.signal.medfilt(signal, kernelSize)))
   
 if __name__ == '__main__':
-  samplingRate, data = scipy.io.wavfile.read('dataset/twinkle twinkle little star.wav')
+  kiki = 'dataset/Kiki-A-Town-with-an-Ocean-View.wav'
+  twinkle = 'dataset/twinkle twinkle little star.wav'
+  samplingRate, data = scipy.io.wavfile.read(twinkle)
   data = np.add(data[:,0], data[:,1])
   signal = msignal.Signal(samplingRate, data)
-  sd = spectral_difference.spectralDifference(signal, 40, 5)
-  thresholds = medianFilter(sd, 999, 0, 1)
-  peakLocs = findPeaks(sd, thresholds, 2000)
+  hopSize = 200
+  sd = spectral_difference.spectralDifference(signal, 400, hopSize)
+  sdUpsampled = scipy.signal.resample(sd, len(sd) * hopSize)
+  thresholds = medianFilter(sd, 1, 1e10, 0)
+  peakLocs = findPeaks(sd, thresholds, 25)
+  onsets = peakLocs * hopSize
   plt.figure(1)
-  plt.plot(thresholds)
-  plt.plot(sd)
-  plt.plot(peakLocs, np.zeros(len(peakLocs)), 'ro')
+  plt.subplot(211)
+  plt.plot(sdUpsampled)
+  plt.subplot(212)
+  plt.plot(data)
+  plt.plot(onsets, np.zeros(len(peakLocs)), 'ro')
   plt.show()

@@ -1,3 +1,5 @@
+import time
+
 import midiutil.MidiFile
 
 import numpy as np
@@ -39,14 +41,26 @@ def getSignalInformation(signal):
   - note durations
   - pitches
   '''
+  print 'getSignalInformation() started'
+  t1 = time.time() * 1000.0
   onsets = onset_detection.getOnsets(signal)
+  t2 = time.time() * 1000.0
+  print 'Onset detection finished in %d milliseconds' % (t2 - t1)
   noteDurations = note_duration_detection.getNoteDurations(signal, onsets)
+  t3 = time.time() * 1000.0
+  print 'Duration detection finished in %d milliseconds' % (t3 - t2)
   offsets = np.add(onsets, noteDurations)
+  t4 = time.time() * 1000.0
+  print 'Offset computation finished in %d milliseconds' % (t4 - t3)
   def getPitch(index):
     return pitch_detection.getGeneralPitch(msignal.Signal(signal.samplingRate, \
       signal.truncate(onsets[index], offsets[index]).data))
   pitches = np.array([ getPitch(i) for i in xrange(len(onsets)) ])
+  t5 = time.time() * 1000.0
+  print 'Computing pitches finished in %d milliseconds' % (t5 - t4)
   return onsets, noteDurations, pitches
 
 if __name__ == '__main__':
-  monophonicWavToMidi('dataset/twinkle twinkle little star.wav', 'new_music.mid')
+  kiki = 'dataset/Kiki-A-Town-with-an-Ocean-View.wav'
+  twinkle = 'dataset/twinkle twinkle little star.wav'
+  monophonicWavToMidi(kiki, 'new_music2.mid')

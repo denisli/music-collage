@@ -6,9 +6,9 @@ def getOnsets(signal):
   '''
   Returns a list of times for which the onset of the notes are at.
   '''
-  hopSize = 5
-  sd = spectral_difference.spectralDifference(signal, 40, hopSize)
-  thresholds = peak_finding.medianFilter(sd, 99, 0, 1)
-  peakLocs = peak_finding.findPeaks(sd, thresholds, 2000)
+  hopSize = 200
+  sd = spectral_difference.spectralDifference(signal, 400, hopSize)
+  thresholds = peak_finding.medianFilter(sd, 1, 1e10, 0)
+  peakLocs = peak_finding.findPeaks(sd, thresholds, 25)
   onsets = np.multiply(peakLocs, hopSize)
   return onsets

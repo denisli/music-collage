@@ -30,8 +30,8 @@ def getNoteDurations(signal, onsets):
       if currentOnsetIndex == len(onsets): break
       currentOnset = onsets[currentOnsetIndex]
       continue
-    # silence found at this index
-    if isSilent(i):
+    # silence found at this index (but remember to check duration is at least 100)
+    if i > currentOnset + 1000 and isSilent(i):
       durations.append(i - currentOnset + 1)
       currentOnsetIndex += 1
       if currentOnsetIndex == len(onsets): break
