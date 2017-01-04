@@ -1,3 +1,35 @@
+# ===================================================================
+#  Pitch detection module
+#
+#  Demonstrates use of period estimator algorithm based on 
+#  normalized autocorrelation. Other neat tricks include sub-sample
+#  accuracy of the period estimate, and avoidance of octave errors.
+#
+#  Released under the MIT License
+#
+#  The MIT License (MIT)
+#
+#  Copyright (c) 2017 Denis Li
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included in
+#  all copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+#  THE SOFTWARE.
+# ===================================================================
+
 import numpy as np
 import stft
 import numpy as np
@@ -9,7 +41,7 @@ import peak_finding
 import note_duration_detection
 
 # Implementation based off of:
-# https://gerrybeauregard.wordpress.com/2013/07/15/high-accuracy-monophonic-pitch-estimation-using-normalized-autocorrelation/
+# https:#gerrybeauregard.wordpress.com/2013/07/15/high-accuracy-monophonic-pitch-estimation-using-normalized-autocorrelation/
 # Modified accordingly by me for my own purposes
 def getGeneralPitch(signal):
   '''
