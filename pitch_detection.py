@@ -39,6 +39,7 @@ import matplotlib.pyplot as plt
 import spectral_difference
 import peak_finding
 import note_duration_detection
+import signal_util
 
 # Implementation based off of:
 # https:#gerrybeauregard.wordpress.com/2013/07/15/high-accuracy-monophonic-pitch-estimation-using-normalized-autocorrelation/
@@ -74,7 +75,7 @@ def getGeneralPitch(signal):
   pEst = bestP + shift
 
   # find out if there is a sub-multiple period that works
-  subMulThreshold = 0.9
+  subMulThreshold = 0.7
   maxMul = bestP / minP
   found = False
   mul = maxMul
@@ -91,17 +92,19 @@ def getGeneralPitch(signal):
   return float(signal.samplingRate / pEst)
 
 if __name__ == '__main__':
-  samplingRate, data = scipy.io.wavfile.read('dataset/twinkle twinkle little star.wav')
+  kiki = 'dataset/Kiki-A-Town-with-an-Ocean-View.wav'
+  twinkle = 'dataset/twinkle twinkle little star.wav'
+  samplingRate, data = scipy.io.wavfile.read(kiki)
   print 'here0'
   data = np.sum(data, 1)
   signal = msignal.Signal(samplingRate, data)
   print 'here0.5'
-  hopSize = 10
-  sd = spectral_difference.spectralDifference(signal, 40, hopSize)
+  hopSize = 200
+  sd = spectral_difference.spectralDifference(signal, 400, hopSize)
   print 'here1'
-  thresholds = peak_finding.medianFilter(sd, 99, 0, 1)
+  thresholds = peak_finding.medianFilter(sd, 1, 1e10, 0)
   print 'here2'
-  peakLocs = peak_finding.findPeaks(sd, thresholds, 2000)
+  peakLocs = peak_finding.findPeaks(sd, thresholds, 25)
   print 'here3'
   onsets = np.multiply(peakLocs, hopSize)
   print 'here4'
@@ -109,5 +112,10 @@ if __name__ == '__main__':
   print 'here5'
   offsets = np.add(onsets, durations)
   print 'here6'
-  for i in xrange(len(onsets)):
-    print i, getGeneralPitch(signal.truncate(onsets[i], offsets[i]+1))
+  for second in xrange(18, 22):
+    print second, signal_util.getIndex(signal.samplingRate, second)
+  indices = range(36, 39)
+  for index in indices:
+    print index, onsets[index], offsets[index], getGeneralPitch(signal.truncate(onsets[index], offsets[index]+1))
+  #for i in xrange(len(onsets)):
+  #  print i, getGeneralPitch(signal.truncate(onsets[i], offsets[i]+1))

@@ -29,7 +29,7 @@ def monophonicWavToMidi(wav_filename, midi_filename):
     duration = float(durations[i]) / samplingRate
     # Formula for MIDI pitch in the beow wiki page
     # https://en.wikipedia.org/wiki/MIDI_Tuning_Standard
-    pitch = int(69 + 12 * np.log2(float(pitches[i]) / 440))
+    pitch = int(np.round(69 + 12 * np.log2(float(pitches[i]) / 440)))
     midi.addNote(track, channel, pitch, time, duration, volume)
   with open(midi_filename, 'wb') as output_file:
     midi.writeFile(output_file)
@@ -63,4 +63,5 @@ def getSignalInformation(signal):
 if __name__ == '__main__':
   kiki = 'dataset/Kiki-A-Town-with-an-Ocean-View.wav'
   twinkle = 'dataset/twinkle twinkle little star.wav'
+  #monophonicWavToMidi(twinkle, 'new_music.mid')
   monophonicWavToMidi(kiki, 'new_music2.mid')
