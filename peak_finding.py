@@ -5,6 +5,7 @@ import scipy.io.wavfile
 import scipy.signal
 import matplotlib.pyplot as plt
 import spectral_difference
+import default_params
 
 def findPeaks(data, thresholdFunction, radius):
   peakLocs = []
@@ -27,12 +28,11 @@ if __name__ == '__main__':
   samplingRate, data = scipy.io.wavfile.read(twinkle)
   data = np.add(data[:,0], data[:,1])
   signal = msignal.Signal(samplingRate, data)
-  hopSize = 200
-  sd = spectral_difference.spectralDifference(signal, 400, hopSize)
-  sdUpsampled = scipy.signal.resample(sd, len(sd) * hopSize)
-  thresholds = medianFilter(sd, 1, 1e10, 0)
-  peakLocs = findPeaks(sd, thresholds, 25)
-  onsets = peakLocs * hopSize
+  sd = spectral_difference.spectralDifference(signal, default_params.WINDOW_SIZE, default_params.HOP_SIZE)
+  sdUpsampled = scipy.signal.resample(sd, len(sd) * default_params.HOP_SIZE)
+  thresholds = medianFilter(sd, default_params.MEDIAN_FILTER_KERNEL_SIZE, default_params.MEDIAN_FILTER_DELTA, default_params.MEDIAN_FILTER_LAMBDA)
+  peakLocs = findPeaks(sd, thresholds, default_params.PEAK_FINDING_RADIUS)
+  onsets = peakLocs * default_params.HOP_SIZE
   plt.figure(1)
   plt.subplot(211)
   plt.plot(sdUpsampled)

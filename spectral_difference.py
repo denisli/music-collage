@@ -4,6 +4,7 @@ import numpy as np
 import msignal
 import scipy.io.wavfile
 import matplotlib.pyplot as plt
+import default_params
 
 # Implementation information found here:
 # http://bingweb.binghamton.edu/~ahess2/Onset_Detection_Nov302011.pdf
@@ -20,7 +21,7 @@ if __name__ == '__main__':
   data = np.add(data[:,0], data[:,1])
   signal = msignal.Signal(samplingRate, data)
   startTime = time.time()*1000.0
-  sd = spectralDifference(signal, 40, 5)
+  sd = spectralDifference(signal, default_params.WINDOW_SIZE, default_params.HOP_SIZE)
   endTime = time.time()*1000.0
   print 'spectralDifference() took %d milliseconds' % (endTime - startTime)
   plt.plot(sd)

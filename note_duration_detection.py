@@ -6,6 +6,7 @@ import scipy.io.wavfile
 import matplotlib.pyplot as plt
 import spectral_difference
 import peak_finding
+import default_params
 
 SILENCE_THRESHOLD = 10
 
@@ -47,14 +48,13 @@ if __name__ == '__main__':
   print 'here0'
   data = np.add(data[:,0], data[:,1])
   signal = msignal.Signal(samplingRate, data)
-  hopSize = 10
-  sd = spectral_difference.spectralDifference(signal, 40, hopSize)
+  sd = spectral_difference.spectralDifference(signal, default_params.WINDOW_SIZE, default_params.HOP_SIZE)
   print 'here1'
-  thresholds = peak_finding.medianFilter(sd, 99, 0, 1)
+  thresholds = peak_finding.medianFilter(sd, default_params.MEDIAN_FILTER_KERNEL_SIZE, default_params.MEDIAN_FILTER_DELTA, default_params.MEDIAN_FILTER_LAMBDA)
   print 'here2'
-  peakLocs = peak_finding.findPeaks(sd, thresholds, 2000)
+  peakLocs = peak_finding.findPeaks(sd, thresholds, default_params.PEAK_FINDING_RADIUS)
   print 'here3'
-  actualPeakLocs = np.multiply(peakLocs, hopSize)
+  actualPeakLocs = np.multiply(peakLocs, default_params.HOP_SIZE)
   print 'here4'
   durations = getNoteDurations(signal, actualPeakLocs)
   print 'here5'
