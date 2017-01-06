@@ -63,5 +63,5 @@ def getSignalInformation(signal):
 if __name__ == '__main__':
   kiki = 'dataset/Kiki-A-Town-with-an-Ocean-View.wav'
   twinkle = 'dataset/twinkle twinkle little star.wav'
-  monophonicWavToMidi(twinkle, 'new_music.mid')
-  #monophonicWavToMidi(kiki, 'new_music2.mid')
+  #monophonicWavToMidi(twinkle, 'new_music.mid')
+  monophonicWavToMidi(kiki, 'new_music2.mid')

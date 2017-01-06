@@ -42,6 +42,7 @@ import note_duration_detection
 import signal_util
 import filtering
 import default_params
+import warnings
 
 # Implementation based off of:
 # https:#gerrybeauregard.wordpress.com/2013/07/15/high-accuracy-monophonic-pitch-estimation-using-normalized-autocorrelation/
@@ -91,6 +92,9 @@ def getGeneralPitch(signal):
       found = True
       pEst = pTest
     mul -= 1
+  if pEst <= 0:
+    warnings.warn('Could not find appropriate pitch. Returning false frequency %f' % maxF)
+    return maxF
   return float(signal.samplingRate / pEst)
 
 if __name__ == '__main__':

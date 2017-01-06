@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import spectral_difference
 import peak_finding
 import filtering
+import onset_detection
 import default_params
 
 SILENCE_THRESHOLD = 10
@@ -17,6 +18,13 @@ def getNoteDurations(signal, onsets):
   absData = np.abs(signal.data)
   radius = 20
   skip = 50
+  # humans can only hear onsets that are at least 60 ms apart (i.e. 60/1000 of the sampling rate indices)
+  # information found in this paper:
+  # https://pdfs.semanticscholar.org/5042/46e788ee540edaa03c321ca03f0e49b57b32.pdf
+  # This parameter is needed cause this implementation is a bit jank and can possibly find offsets close to onset
+  # Because of resolution issues, this means that there is an interval of silence. I cannot find the pitch of a
+  # silent region.
+  minDuration = 60 * signal.samplingRate / 1000
   def isSilent(index):
     return all(val <= SILENCE_THRESHOLD for val in absData[index-radius:index+1]) or \
       all(val <= SILENCE_THRESHOLD for val in absData[index:index+radius+1])
@@ -33,7 +41,7 @@ def getNoteDurations(signal, onsets):
       currentOnset = onsets[currentOnsetIndex]
       continue
     # silence found at this index (but remember to check duration is at least 100)
-    if i > currentOnset + 1000 and isSilent(i):
+    if i > currentOnset + minDuration and isSilent(i):
       durations.append(i - currentOnset + 1)
       currentOnsetIndex += 1
       if currentOnsetIndex == len(onsets): break
@@ -49,20 +57,14 @@ if __name__ == '__main__':
   print 'here0'
   data = np.add(data[:,0], data[:,1])
   signal = msignal.Signal(samplingRate, data)
-  sd = spectral_difference.spectralDifference(signal, default_params.WINDOW_SIZE, default_params.HOP_SIZE)
+  onsets = onset_detection.getOnsets(signal)
   print 'here1'
-  thresholds = filtering.medianFilter(sd, default_params.MEDIAN_FILTER_KERNEL_SIZE, default_params.MEDIAN_FILTER_DELTA, default_params.MEDIAN_FILTER_LAMBDA)
+  durations = getNoteDurations(signal, onsets)
   print 'here2'
-  peakLocs = peak_finding.findPeaks(sd, thresholds, default_params.PEAK_FINDING_RADIUS)
+  offsets = np.add(onsets, durations)
   print 'here3'
-  actualPeakLocs = np.multiply(peakLocs, default_params.HOP_SIZE)
-  print 'here4'
-  durations = getNoteDurations(signal, actualPeakLocs)
-  print 'here5'
-  offsets = np.add(actualPeakLocs, durations)
-  print 'here6'
   plt.figure(1)
   plt.plot(signal.data, 'b')
-  plt.plot(actualPeakLocs, np.zeros(len(actualPeakLocs)), 'go')
+  plt.plot(onsets, np.zeros(len(onsets)), 'go')
   plt.plot(offsets, np.zeros(len(offsets)), 'ro')
   plt.show()
