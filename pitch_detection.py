@@ -40,6 +40,7 @@ import spectral_difference
 import peak_finding
 import note_duration_detection
 import signal_util
+import filtering
 import default_params
 
 # Implementation based off of:
@@ -102,7 +103,7 @@ if __name__ == '__main__':
   print 'here0.5'
   sd = spectral_difference.spectralDifference(signal, default_params.WINDOW_SIZE, default_params.HOP_SIZE)
   print 'here1'
-  thresholds = peak_finding.medianFilter(sd, default_params.MEDIAN_FILTER_KERNEL_SIZE, default_params.MEDIAN_FILTER_DELTA, default_params.MEDIAN_FILTER_LAMBDA)
+  thresholds = filtering.medianFilter(sd, default_params.MEDIAN_FILTER_KERNEL_SIZE, default_params.MEDIAN_FILTER_DELTA, default_params.MEDIAN_FILTER_LAMBDA)
   print 'here2'
   peakLocs = peak_finding.findPeaks(sd, thresholds, default_params.PEAK_FINDING_RADIUS)
   print 'here3'
