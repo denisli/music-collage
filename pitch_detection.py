@@ -30,7 +30,6 @@
 #  THE SOFTWARE.
 # ===================================================================
 
-import numpy as np
 import stft
 import numpy as np
 import msignal
@@ -38,6 +37,7 @@ import scipy.io.wavfile
 import matplotlib.pyplot as plt
 import spectral_difference
 import peak_finding
+import onset_detection
 import note_duration_detection
 import signal_util
 import filtering
@@ -56,7 +56,7 @@ def getGeneralPitch(signal):
   n = len(data)
   minF, maxF = 27.5, 4186.0
   minP, maxP = int(signal.samplingRate / maxF - 1), int(signal.samplingRate / minF + 1)
-  
+
   # figure out the normalized autocorrelation
   nac = np.zeros(maxP + 2).astype(float)
   for p in xrange(minP-1, maxP+2):
@@ -66,32 +66,27 @@ def getGeneralPitch(signal):
     sumSqBeg = np.dot(unshifted, unshifted)
     sumSqEnd = np.dot(shifted, shifted)
     nac[p] = ac / np.sqrt(sumSqBeg * sumSqEnd)
+  nac = nac / np.max(nac)
 
-  # find the highest value
-  bestP = minP
-  for p in xrange(minP, maxP+1):
-    if nac[p] > nac[bestP]: bestP = p
+  # find the first peak above a reasonable threshold
+  peakThreshold = 0.9
+  peakRadius = 3
+  peakLocs = peak_finding.findPeaks(nac, np.full(len(nac), peakThreshold), peakRadius)
+  ignoredPeak = peak_finding.findPeaks(nac, np.full(len(nac), 0.99 * nac[minP-1]), peakRadius)[0]
+  if peakLocs[0] == ignoredPeak:
+    if len(peakLocs) == 1:
+      warnings.warn('Did not find a good period (%d), but have to use it anyway' % ignoredPeak)
+      bestP = ignoredPeak
+    else:
+      bestP = peakLocs[1]
+  else:
+    bestP = peakLocs[0]
 
   # interpolate to find the estimated period
   mid, left, right = nac[bestP], nac[bestP-1], nac[bestP+1]
   shift = 0.5 * (right - left) / (2 * mid - left - right)
   pEst = bestP + shift
 
-  # find out if there is a sub-multiple period that works
-  subMulThreshold = 0.7
-  maxMul = bestP / minP
-  found = False
-  mul = maxMul
-  while not found and mul >= 1:
-    subsAllStrong = True
-    pTest = pEst / mul
-    for k in xrange(1, mul):
-      pTestMul = int(k * pTest + 0.5)
-      if nac[pTestMul] < subMulThreshold * nac[bestP]: subsAllStrong = False
-    if subsAllStrong:
-      found = True
-      pEst = pTest
-    mul -= 1
   if pEst <= 0:
     warnings.warn('Could not find appropriate pitch. Returning false frequency %f' % maxF)
     return maxF
@@ -104,23 +99,13 @@ if __name__ == '__main__':
   print 'here0'
   data = np.sum(data, 1)
   signal = msignal.Signal(samplingRate, data)
-  print 'here0.5'
-  sd = spectral_difference.spectralDifference(signal, default_params.WINDOW_SIZE, default_params.HOP_SIZE)
   print 'here1'
-  thresholds = filtering.medianFilter(sd, default_params.MEDIAN_FILTER_KERNEL_SIZE, default_params.MEDIAN_FILTER_DELTA, default_params.MEDIAN_FILTER_LAMBDA)
+  onsets = onset_detection.getOnsets(signal)
   print 'here2'
-  peakLocs = peak_finding.findPeaks(sd, thresholds, default_params.PEAK_FINDING_RADIUS)
-  print 'here3'
-  onsets = np.multiply(peakLocs, default_params.HOP_SIZE)
-  print 'here4'
   durations = note_duration_detection.getNoteDurations(signal, onsets)
-  print 'here5'
+  print 'here3'
   offsets = np.add(onsets, durations)
-  print 'here6'
-  for second in xrange(18, 22):
-    print second, signal_util.getIndex(signal.samplingRate, second)
-  indices = range(36, 39)
+  print 'here4'
+  indices = range(93, 94)
   for index in indices:
     print index, onsets[index], offsets[index], getGeneralPitch(signal.truncate(onsets[index], offsets[index]+1))
-  #for i in xrange(len(onsets)):
-  #  print i, getGeneralPitch(signal.truncate(onsets[i], offsets[i]+1))
