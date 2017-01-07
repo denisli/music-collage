@@ -1,4 +1,3 @@
-import numpy as np
 import stft
 import numpy as np
 import msignal
@@ -9,15 +8,19 @@ import peak_finding
 import filtering
 import onset_detection
 import default_params
+import scipy.signal
 
-SILENCE_THRESHOLD = 10
+SILENCE_THRESHOLD = 500
 
 def getNoteDurations(signal, onsets):
   durations = []
   if len(onsets) == 0: return durations
-  absData = np.abs(signal.data)
+  data = np.abs(signal.data)
+  n = 500
+  cumulative = np.cumsum(data)
+  data = (cumulative[n-1:] - cumulative[:len(cumulative)-n+1]) / n
   radius = 20
-  skip = 50
+  skip = 5
   # humans can only hear onsets that are at least 60 ms apart (i.e. 60/1000 of the sampling rate indices)
   # information found in this paper:
   # https://pdfs.semanticscholar.org/5042/46e788ee540edaa03c321ca03f0e49b57b32.pdf
@@ -26,12 +29,12 @@ def getNoteDurations(signal, onsets):
   # silent region.
   minDuration = 60 * signal.samplingRate / 1000
   def isSilent(index):
-    return all(val <= SILENCE_THRESHOLD for val in absData[index-radius:index+1]) or \
-      all(val <= SILENCE_THRESHOLD for val in absData[index:index+radius+1])
+    return all(val <= SILENCE_THRESHOLD for val in data[index-radius:index+1]) or \
+      all(val <= SILENCE_THRESHOLD for val in data[index:index+radius+1])
   currentOnsetIndex = 0
   currentOnset = onsets[currentOnsetIndex]
   # go through each index to see if it is a silence
-  for i in xrange(radius, len(absData) - radius, skip):
+  for i in xrange(radius, len(data) - radius, skip):
     if i <= currentOnset: continue # make sure index is greater than currentOnset
     # handle case where passed onto the next onset without a silence
     if currentOnsetIndex < len(onsets) - 1 and i >= onsets[currentOnsetIndex + 1]:
@@ -53,7 +56,9 @@ def getNoteDurations(signal, onsets):
   return np.array(durations)
 
 if __name__ == '__main__':
-  samplingRate, data = scipy.io.wavfile.read('dataset/twinkle twinkle little star.wav')
+  kiki = 'dataset/Kiki-A-Town-with-an-Ocean-View.wav'
+  twinkle = 'dataset/twinkle twinkle little star.wav'
+  samplingRate, data = scipy.io.wavfile.read(kiki)
   print 'here0'
   data = np.add(data[:,0], data[:,1])
   signal = msignal.Signal(samplingRate, data)
